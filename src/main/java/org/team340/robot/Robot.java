@@ -35,7 +35,7 @@ public final class Robot extends LoggedRobot {
      * Vision
      * More autos (if corbin thinks intake will be done?)
      * Buttons
-     * 
+     * Flash paid software onto motors
      * 
      * 🗑️🪠 DE---CIM---ATE
      */
