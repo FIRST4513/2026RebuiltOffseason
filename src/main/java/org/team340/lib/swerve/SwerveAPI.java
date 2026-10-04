@@ -33,6 +33,7 @@ import org.team340.lib.swerve.hardware.SwerveIMUs.SwerveIMU;
 import org.team340.lib.tunable.TunableTable;
 import org.team340.lib.tunable.Tunables.Tunable;
 import org.team340.lib.util.Sleep;
+import org.team340.robot.Robot;
 
 /**
  * An implementation of a swerve drivetrain, with support for various hardware configurations.
@@ -175,9 +176,6 @@ public class SwerveAPI implements Tunable, AutoCloseable {
         } finally {
             odometryMutex.unlock();
         }
-
-        state.translation = state.pose.getTranslation();
-        state.rotation = state.pose.getRotation();
     }
 
     /**
@@ -197,9 +195,6 @@ public class SwerveAPI implements Tunable, AutoCloseable {
         } finally {
             odometryMutex.unlock();
         }
-
-        state.translation = state.pose.getTranslation();
-        state.rotation = state.pose.getRotation();
     }
 
     /**
@@ -220,9 +215,6 @@ public class SwerveAPI implements Tunable, AutoCloseable {
         } finally {
             odometryMutex.unlock();
         }
-
-        state.translation = state.pose.getTranslation();
-        state.rotation = state.pose.getRotation();
     }
 
     /**
@@ -273,6 +265,20 @@ public class SwerveAPI implements Tunable, AutoCloseable {
         boolean ratelimit
     ) {
         ChassisSpeeds speeds = calculateDriverSpeeds(x, y, angular);
+        applySpeeds(speeds, perspective, discretize, ratelimit);
+    }
+
+    public void applyDriverInputAtHub(
+        double x,
+        double y,
+        double angular,
+        Perspective perspective,
+        boolean discretize,
+        boolean ratelimit,
+        double skib
+    ) {
+        ChassisSpeeds speeds = calculateDriverSpeeds(x, y, angular);
+        speeds.omegaRadiansPerSecond = skib;
         applySpeeds(speeds, perspective, discretize, ratelimit);
     }
 
@@ -527,7 +533,7 @@ public class SwerveAPI implements Tunable, AutoCloseable {
 
                 if (readError) {
                     failures++;
-                    if (!RobotBase.isSimulation()) return;
+                    if (!Robot.isSimulation()) return;
                 }
 
                 poseEstimator.updateWithTime(lastTimestamp, lastYaw, positionCache);

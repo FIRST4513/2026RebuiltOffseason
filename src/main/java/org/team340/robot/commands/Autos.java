@@ -3,7 +3,11 @@ package org.team340.robot.commands;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+
 import org.team340.lib.math.geometry.ExtPose;
 import org.team340.lib.tunable.TunableTable;
 import org.team340.lib.tunable.Tunables;
@@ -11,6 +15,12 @@ import org.team340.lib.tunable.Tunables.TunableDouble;
 import org.team340.lib.util.command.AutoChooser;
 import org.team340.robot.Robot;
 import org.team340.robot.subsystems.Swerve;
+import org.team340.robot.subsystems.Conveyor.ConveyorCmds;
+import org.team340.robot.subsystems.Conveyor.ConveyorSubSys.ConveyorState;
+import org.team340.robot.subsystems.Shooter.ShooterCmds;
+import org.team340.robot.subsystems.Shooter.ShooterSubsys.ShooterState;
+import org.team340.robot.subsystems.ShooterFeeder.ShooterFeederCmds;
+import org.team340.robot.subsystems.ShooterFeeder.ShooterFeederSubSys.ShooterFeederState;
 
 /**
  * The Autos class declares autonomous modes, and adds them
@@ -36,6 +46,7 @@ public final class Autos {
         chooser = new AutoChooser();
 
         // Add autonomous modes to the dashboard
+        chooser.add("Off line shoot", offLineShoot());
         chooser.add("Example", example());
     }
 
@@ -49,6 +60,28 @@ public final class Autos {
             swerve.apfDrive(middle, deceleration, tolerance),
             swerve.apfDrive(end, deceleration, tolerance),
             swerve.stop(false)
+        );
+    }
+
+    private Command offLineShoot() {
+        var start = new ExtPose(4, 1, Rotation2d.k180deg);
+        var middle = new Translation2d(2.828, 0.6);
+        var middle2 = new ExtPose(2.8, 0.6, Rotation2d.fromDegrees(59));
+        var end = new ExtPose(2, 0.6, Rotation2d.kZero);
+
+        return new SequentialCommandGroup(
+            swerve.resetPose(start),
+            //swerve.aimAtHub(() -> middle, deceleration),
+            swerve.apfDrive(middle2, deceleration, tolerance),
+            ShooterFeederCmds.shooterFeederSetState(ShooterFeederState.ON),
+            new WaitCommand(1),
+            ShooterCmds.shooterSetState(ShooterState.AUTO),
+            ConveyorCmds.ConveyorSetState(ConveyorState.FEEDING),
+            new WaitCommand(2.5),
+            ShooterFeederCmds.shooterFeederStopCmd(),
+            ShooterCmds.shooterStopCmd(),
+            ConveyorCmds.ConveyorStopCmd(),
+            swerve.apfDrive(end, deceleration)
         );
     }
 }

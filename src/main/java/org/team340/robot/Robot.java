@@ -6,16 +6,39 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import org.team340.lib.logging.LoggedRobot;
 import org.team340.lib.logging.Profiler;
 import org.team340.lib.util.DisableWatchdog;
 import org.team340.robot.commands.Autos;
 import org.team340.robot.commands.Routines;
+import org.team340.robot.subsystems.Shooter.ShooterCmds;
+import org.team340.robot.subsystems.Shooter.ShooterSubsys;
+import org.team340.robot.subsystems.Shooter.ShooterSubsys.ShooterState;
+import org.team340.robot.subsystems.ShooterFeeder.ShooterFeederSubSys;
 import org.team340.robot.subsystems.Swerve;
+import org.team340.robot.subsystems.Conveyor.ConveyorSubSys;
+import org.team340.robot.subsystems.Intake.IntakeCmds;
+import org.team340.robot.subsystems.Intake.IntakeSubsys;
+import org.team340.robot.subsystems.Intake.IntakeSubsys.IntakeState;
+import org.team340.robot.subsystems.Pivot.PivotSubsys;
 
 @Logged
 public final class Robot extends LoggedRobot {
+    
+
+    /* TODO:🐖🐖🐖🐖🐖🐖🐖🐖🐖🐖🐖🐖🐖
+     * Set swerve module offsets
+     * Set shooter auto speed bands
+     * Set pivot rotations
+     * Vision
+     * More autos (if corbin thinks intake will be done?)
+     * Buttons
+     * 
+     * 
+     * 🗑️🪠 DE---CIM---ATE
+     */
 
     private final CommandScheduler scheduler = CommandScheduler.getInstance();
 
@@ -23,9 +46,16 @@ public final class Robot extends LoggedRobot {
 
     public final Routines routines;
     public final Autos autos;
+    public static ShooterSubsys shooter;
+    public static IntakeSubsys intake;
+    public static ShooterFeederSubSys shooterFeeder;
+    public static ConveyorSubSys conveyor;
+    public static PivotSubsys pivot;
 
     private final CommandXboxController driver;
     private final CommandXboxController coDriver;
+
+    public static double Distance;
 
     public Robot() {
         // Initialize subsystems
@@ -34,6 +64,11 @@ public final class Robot extends LoggedRobot {
         // Initialize compositions
         routines = new Routines(this);
         autos = new Autos(this);
+        shooter = new ShooterSubsys();
+        intake = new IntakeSubsys();
+        shooterFeeder = new ShooterFeederSubSys();
+        conveyor = new ConveyorSubSys();
+        pivot = new PivotSubsys();
 
         // Initialize controllers
         driver = new CommandXboxController(Constants.DRIVER);
@@ -46,8 +81,31 @@ public final class Robot extends LoggedRobot {
         driver.a().onTrue(none());
         driver.povLeft().onTrue(swerve.tareRotation());
 
+        driver.button(6).onTrue(new InstantCommand(() -> scheduler.cancel(swerve.drive(null, null, null))));
+        driver
+            .button(6)
+            .onTrue(
+                new InstantCommand(() ->
+                    scheduler.schedule(swerve.driveAtHub(this::driverX, this::driverY, this::driverAngular))
+                )
+            );
+
+
+        driver.button(5).onTrue(new InstantCommand(() -> scheduler.cancel(swerve.driveAtHub(null, null, null))));
+        driver
+            .button(5)
+            .onTrue(
+                new InstantCommand(() ->
+                    scheduler.schedule(swerve.drive(this::driverX, this::driverY, this::driverAngular))
+                )
+            );
+
         // Co-driver bindings
-        coDriver.a().onTrue(none());
+        coDriver.y().onTrue(ShooterCmds.shooterSetState(ShooterState.AUTO));
+        coDriver.x().onTrue(ShooterCmds.shooterStopCmd());
+        coDriver.b().onTrue(IntakeCmds.intakeSetState(IntakeState.INTAKE));
+        coDriver.a().onTrue(IntakeCmds.intakeSetState(IntakeState.STOPPED));
+
 
         // Disable loop overrun warnings from the command
         // scheduler, since we already log loop timings
@@ -75,5 +133,13 @@ public final class Robot extends LoggedRobot {
     @Override
     public void robotPeriodic() {
         Profiler.run("scheduler", scheduler::run);
+    }
+
+    public double distanceToHub() {
+        return swerve.distanceToHub();
+    }
+
+    public static double getDistance() {
+        return Distance;
     }
 }

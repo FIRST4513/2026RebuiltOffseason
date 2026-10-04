@@ -1,11 +1,15 @@
 package org.team340.robot;
 
+import org.team340.robot.util.Vision.CameraConfig;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
  * globally (i.e. public static). Do not put anything functional in this class.
  */
 public final class Constants {
+
+    public static final CameraConfig[] CAMERAS = { new CameraConfig("NAME", null, null) };
 
     public static final double VOLTAGE = 12.0;
 
@@ -36,5 +40,21 @@ public final class Constants {
         public static final int BR_ENCODER = 13;
 
         public static final int CANANDGYRO = 14;
+
+        public static final int PIVOTENCODER = 15;
+
+        public static final int SHOOTER1 = 21;
+        public static final int SHOOTER2 = 22;
+        public static final int SHOOTER3 = 23;
+        public static final int SHOOTER4 = 24;
+
+        public static final int SHOOTERACCELERATOR = 25;
+        public static final int SHOOTERFEEDER = 26;
+
+        public static final int CONVEYOR = 27;
+
+        public static final int PIVOT = 28;
+
+        public static final int INTAKE = 29;
     }
 }

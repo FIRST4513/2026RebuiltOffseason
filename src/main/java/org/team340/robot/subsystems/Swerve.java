@@ -5,6 +5,7 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,9 +25,13 @@ import org.team340.lib.swerve.hardware.SwerveIMUs;
 import org.team340.lib.swerve.hardware.SwerveMotors;
 import org.team340.lib.tunable.TunableTable;
 import org.team340.lib.tunable.Tunables;
+import org.team340.lib.tunable.Tunables.TunableBoolean;
 import org.team340.lib.util.command.GRRSubsystem;
 import org.team340.robot.Constants;
 import org.team340.robot.Constants.RobotMap;
+import org.team340.robot.util.Field;
+import org.team340.robot.util.ShootParams;
+import org.team340.robot.util.Vision;
 
 /**
  * The robot's swerve drivetrain.
@@ -36,7 +41,11 @@ public final class Swerve extends GRRSubsystem {
 
     private static final double OFFSET = Units.inchesToMeters(12.5);
 
+    private static final double SHOOTER_OFFSET = Units.inchesToMeters(7.5);
+
     private static final TunableTable tunables = Tunables.getNested("swerve");
+
+    private static final TunableBoolean enableSOTM = tunables.value("enableSOTM", true);
 
     private final SwerveModuleConfig frontLeft = new SwerveModuleConfig()
         .setName("frontLeft")
@@ -84,12 +93,20 @@ public final class Swerve extends GRRSubsystem {
     @NotLogged
     private final SwerveState state;
 
+    private final Vision vision;
+
     private final SwerveAPI api;
     private final PAPFController apf;
     private final ProfiledPIDController angularPID;
 
+    private double distanceToHub = 0.0;
+    private double angleToHub = 0.0;
+    private double angleToHubInv = 0.0;
+    private boolean seesAprilTag = false;
+
     public Swerve() {
         api = new SwerveAPI(config);
+        vision = new Vision(Constants.CAMERAS);
         apf = new PAPFController(6.0, 0.25, 0.01, true, new Obstacle[0]);
         angularPID = new ProfiledPIDController(8.0, 0.0, 0.0, new Constraints(10.0, 26.0));
         angularPID.enableContinuousInput(-Math.PI, Math.PI);
@@ -103,11 +120,39 @@ public final class Swerve extends GRRSubsystem {
 
     @Override
     public void periodic() {
-        api.refresh();
+        //api.refresh();
+
+        //VISION!!!!!
+        final var measurements = vision.getUnreadResults(state.poseHistory, state.odometryPose, state.velocity);
+        seesAprilTag = measurements.length > 0;
+        api.addVisionMeasurements(measurements);
+
+        // TODO: +0.3 on red, -0.3 on blue
+        double deltaX = state.pose.getX() - (Field.HUB.get().getX());
+        double deltaY = state.pose.getY() - Field.HUB.get().getY();
+
+        double deltaXInv = deltaX * -1;
+        double deltaYInv = deltaY * -1;
+
+        // If shoot on the move is enabled, perform the necessary adjustments.
+        if (enableSOTM.get()) {
+            // Get our field-relative chassis speeds.
+            var fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(state.speeds, state.rotation);
+
+            deltaXInv += (fieldSpeeds.vxMetersPerSecond * 0.35) * ShootParams.TOF * -1;
+            deltaYInv += (fieldSpeeds.vyMetersPerSecond * 0.35) * ShootParams.TOF * -1;
+
+            deltaXInv -= state.rotation.getSin() * fieldSpeeds.omegaRadiansPerSecond * SHOOTER_OFFSET * ShootParams.TOF;
+            deltaYInv += state.rotation.getCos() * fieldSpeeds.omegaRadiansPerSecond * SHOOTER_OFFSET * ShootParams.TOF;
+        }
+        distanceToHub = Math.hypot(deltaX, deltaY);
+        angleToHub = Math.atan2(deltaY, deltaX);
+
+        angleToHubInv = Math.atan2(deltaYInv, deltaXInv);
     }
 
     /**
-     * Tares the rotation of the robot. Useful for
+     * Tare s the rotation of the robot. Useful for
      * fixing an out of sync or drifting IMU.
      */
     public Command tareRotation() {
@@ -143,6 +188,20 @@ public final class Swerve extends GRRSubsystem {
                 Perspective.OPERATOR,
                 true,
                 true
+            )
+        );
+    }
+
+    public Command driveAtHub(DoubleSupplier x, DoubleSupplier y, DoubleSupplier angular) {
+        return commandBuilder("Swerve.drive()").onExecute(() ->
+            api.applyDriverInputAtHub(
+                x.getAsDouble(),
+                y.getAsDouble(),
+                angular.getAsDouble(),
+                Perspective.OPERATOR,
+                true,
+                true,
+                angularPID.calculate(state.rotation.getRadians(), angleToHubInv)
             )
         );
     }
@@ -192,5 +251,9 @@ public final class Swerve extends GRRSubsystem {
      */
     public Command stop(boolean lock) {
         return commandBuilder("Swerve.stop(" + lock + ")").onExecute(() -> api.applyStop(lock));
+    }
+
+    public double distanceToHub() {
+        return distanceToHub;
     }
 }
