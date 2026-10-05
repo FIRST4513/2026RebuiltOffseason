@@ -6,8 +6,7 @@ import org.team340.robot.Robot;
 import org.team340.robot.subsystems.Shooter.ShooterSubsys.ShooterState;
 
 public class ShooterCmds {
-
-    double dth;
+ 
 
     public static Command shooterStopCmd() {
         return new InstantCommand(() -> Robot.shooter.stopMotors());

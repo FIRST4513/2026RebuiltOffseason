@@ -2,6 +2,9 @@ package org.team340.robot;
 
 import org.team340.robot.util.Vision.CameraConfig;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -9,7 +12,15 @@ import org.team340.robot.util.Vision.CameraConfig;
  */
 public final class Constants {
 
-    public static final CameraConfig[] CAMERAS = { new CameraConfig("NAME", null, null) };
+    public static final CameraConfig[] CAMERAS = {
+        new CameraConfig("LeftCam", 
+                    new Translation3d(0.32512, -0.22479, 0.2413254), 
+                    new Rotation3d(0, 0.174533, -0.174533)),
+        new CameraConfig("RightCam", 
+                    new Translation3d(0.32512, 0.22479, 0.2413254), 
+                    new Rotation3d(0, 0.174533, 0.174533))
+        
+    };
 
     public static final double VOLTAGE = 12.0;
 
