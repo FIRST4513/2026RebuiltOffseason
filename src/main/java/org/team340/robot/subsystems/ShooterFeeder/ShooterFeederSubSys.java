@@ -1,14 +1,12 @@
 package org.team340.robot.subsystems.ShooterFeeder;
 
-import org.team340.robot.Constants.RobotMap;
 import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-
+import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.team340.robot.Constants.RobotMap;
 
-public class ShooterFeederSubSys extends SubsystemBase{
-
+public class ShooterFeederSubSys extends SubsystemBase {
 
     public SparkFlex ShooterAccel = new SparkFlex(RobotMap.SHOOTERACCELERATOR, MotorType.kBrushless);
     public SparkMax ShooterFeeder = new SparkMax(RobotMap.SHOOTERFEEDER, MotorType.kBrushless);
@@ -32,6 +30,7 @@ public class ShooterFeederSubSys extends SubsystemBase{
             case ON:
                 ShooterAccel.set(1);
                 ShooterFeeder.set(0.5);
+                break;
             default:
                 ShooterAccel.stopMotor();
                 ShooterFeeder.stopMotor();
@@ -55,7 +54,5 @@ public class ShooterFeederSubSys extends SubsystemBase{
         state = ShooterFeederState.STOPPED;
     }
 
-
-    public void configureMotors() {
-    }
+    public void configureMotors() {}
 }

@@ -1,19 +1,17 @@
 package org.team340.robot.subsystems.Conveyor;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.team340.robot.Constants.RobotMap;
 
-import com.ctre.phoenix6.hardware.TalonFX;
+public class ConveyorSubSys extends SubsystemBase {
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-public class ConveyorSubSys extends SubsystemBase{
-
-    public TalonFX ConveyorMotor = new TalonFX(RobotMap.CONVEYOR);
+    public TalonFX ConveyorMotor = new TalonFX(RobotMap.CONVEYOR, "CANivore");
 
     public enum ConveyorState {
         STOPPED,
         FEEDING,
-        BACKWARDS,
+        BACKWARDS
     }
 
     private static ConveyorState state = ConveyorState.STOPPED;
@@ -26,7 +24,7 @@ public class ConveyorSubSys extends SubsystemBase{
     public void periodic() {
         switch (state) {
             case FEEDING:
-                ConveyorMotor.set(0.5);
+                ConveyorMotor.set(0.25);
                 break;
             case BACKWARDS:
                 ConveyorMotor.set(-0.05);
@@ -34,7 +32,6 @@ public class ConveyorSubSys extends SubsystemBase{
             default:
                 ConveyorMotor.stopMotor();
                 break;
-            
         }
     }
 

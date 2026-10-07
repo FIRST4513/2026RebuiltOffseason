@@ -1,9 +1,8 @@
 package org.team340.robot;
 
-import org.team340.robot.util.Vision.CameraConfig;
-
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import org.team340.robot.util.Vision.CameraConfig;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -13,13 +12,16 @@ import edu.wpi.first.math.geometry.Translation3d;
 public final class Constants {
 
     public static final CameraConfig[] CAMERAS = {
-        new CameraConfig("LeftCam", 
-                    new Translation3d(0.32512, -0.22479, 0.2413254), 
-                    new Rotation3d(0, 0.174533, -0.174533)),
-        new CameraConfig("RightCam", 
-                    new Translation3d(0.32512, 0.22479, 0.2413254), 
-                    new Rotation3d(0, 0.174533, 0.174533))
-        
+        new CameraConfig(
+            "LeftCam",
+            new Translation3d(0.32512, -0.22479, 0.2413254),
+            new Rotation3d(0, 0.174533, 0.174533)
+        ),
+        new CameraConfig(
+            "RightCam",
+            new Translation3d(0.32512, 0.22479, 0.2413254),
+            new Rotation3d(0, 0.174533, -0.174533)
+        )
     };
 
     public static final double VOLTAGE = 12.0;
@@ -34,7 +36,7 @@ public final class Constants {
      */
     public static final class RobotMap {
 
-        public static final String LOWER_CAN = "LowerCAN";
+        public static final String LOWER_CAN = "CANivore";
 
         public static final int FL_MOVE = 2;
         public static final int FL_TURN = 3;

@@ -1,11 +1,10 @@
 package org.team340.robot.subsystems.Shooter;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.team340.robot.Constants.RobotMap;
-import org.team340.robot.Robot;
-import org.team340.robot.util.ShootParams;
 
 public class ShooterSubsys extends SubsystemBase {
 
@@ -39,10 +38,13 @@ public class ShooterSubsys extends SubsystemBase {
                 ShootMotor.set(TalonSRXControlMode.PercentOutput, ShooterConfig.SNOWBLOW);
                 break;
             case AUTO:
-                ShootMotor.set(TalonSRXControlMode.PercentOutput, ShootParams.shooterVelocityMap.get(Robot.getDistance()));
+                ShootMotor.set(
+                    TalonSRXControlMode.PercentOutput,
+                    0.75 //ShootParams.shooterVelocityMap.get(Robot.getDistance())
+                );
                 break;
             default:
-                ShootMotor.neutralOutput();
+                ShootMotor.set(TalonSRXControlMode.PercentOutput, 0);
                 break;
         }
     }
@@ -58,7 +60,7 @@ public class ShooterSubsys extends SubsystemBase {
     }
 
     public void stopMotors() {
-        ShootMotor.neutralOutput();
+        ShootMotor.set(TalonSRXControlMode.PercentOutput, 0);
         state = ShooterState.STOPPED;
     }
 
@@ -71,5 +73,9 @@ public class ShooterSubsys extends SubsystemBase {
     public void configureMotors() {
         ShootMotor3.setInverted(true);
         ShootMotor4.setInverted(true);
+        ShootMotor.setNeutralMode(NeutralMode.Coast);
+        ShootMotor2.setNeutralMode(NeutralMode.Coast);
+        ShootMotor3.setNeutralMode(NeutralMode.Coast);
+        ShootMotor4.setNeutralMode(NeutralMode.Coast);
     }
 }

@@ -1,22 +1,25 @@
 package org.team340.robot.subsystems.Pivot;
 
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import org.team340.lib.util.command.GRRSubsystem;
 import org.team340.robot.Constants.RobotMap;
 
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-
 public class PivotSubsys extends GRRSubsystem {
-    public TalonFX pivot = new TalonFX(RobotMap.PIVOT, "Canivore");
-    public CANcoder pivotCaNcoder = new CANcoder(RobotMap.PIVOTENCODER, "Canivore");
 
-    public enum PivotState{
+    public SparkMax pivot = new SparkMax(RobotMap.PIVOT, MotorType.kBrushless);
+    public CANcoder pivotCaNcoder = new CANcoder(RobotMap.PIVOTENCODER, "CANivore");
+
+    public enum PivotState {
         STOW,
         EXTEND,
         SPEAK
     }
+
     private static PivotState state = PivotState.STOW;
     final MotionMagicVoltage mr = new MotionMagicVoltage(0).withSlot(0);
 
@@ -32,6 +35,7 @@ public class PivotSubsys extends GRRSubsystem {
         switch (state) {
             case STOW:
                 pivot.setControl(mr.withPosition(PivotConfig.STOW));
+                pivot.
                 break;
             case EXTEND:
                 pivot.setControl(mr.withPosition(PivotConfig.EXTEND));
@@ -40,7 +44,7 @@ public class PivotSubsys extends GRRSubsystem {
                 System.out.println(pivotCaNcoder.getAbsolutePosition());
                 break;
             default:
-            pivot.set(0);
+                pivot.set(0);
                 break;
         }
     }
@@ -48,12 +52,11 @@ public class PivotSubsys extends GRRSubsystem {
     /* ----- Setters ----- */
 
     public void setNewState(PivotState newState) {
-       state = newState;
+        state = newState;
     }
 
     /* ----- Config ----- */
     public void configureMotors() {
         pivot.getConfigurator().apply(PivotConfig.getConfig(pivotCaNcoder));
-        
     }
 }

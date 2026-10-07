@@ -1,8 +1,7 @@
 package org.team340.robot.subsystems.Intake;
 
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-
+import com.revrobotics.spark.SparkMax;
 import org.team340.lib.util.command.GRRSubsystem;
 import org.team340.robot.Constants.RobotMap;
 
@@ -12,7 +11,7 @@ public class IntakeSubsys extends GRRSubsystem {
 
     public enum IntakeState {
         STOPPED,
-        INTAKE,
+        INTAKE
     }
 
     private static IntakeState state = IntakeState.STOPPED;
