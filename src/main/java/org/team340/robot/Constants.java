@@ -14,12 +14,12 @@ public final class Constants {
     public static final CameraConfig[] CAMERAS = {
         new CameraConfig(
             "LeftCam",
-            new Translation3d(0.32512, -0.22479, 0.2413254),
+            new Translation3d(0.32512, -0.1397, 0.2313254),
             new Rotation3d(0, 0.174533, 0.174533)
         ),
         new CameraConfig(
             "RightCam",
-            new Translation3d(0.32512, 0.22479, 0.2413254),
+            new Translation3d(0.32512, 0.1397, 0.2313254),
             new Rotation3d(0, 0.174533, -0.174533)
         )
     };

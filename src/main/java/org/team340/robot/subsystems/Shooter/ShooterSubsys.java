@@ -3,19 +3,22 @@ package org.team340.robot.subsystems.Shooter;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.team340.robot.Constants.RobotMap;
 
 public class ShooterSubsys extends SubsystemBase {
 
-    public TalonSRX ShootMotor = new TalonSRX(RobotMap.SHOOTER1);
-    public TalonSRX ShootMotor2 = new TalonSRX(RobotMap.SHOOTER2);
-    public TalonSRX ShootMotor3 = new TalonSRX(RobotMap.SHOOTER3);
-    public TalonSRX ShootMotor4 = new TalonSRX(RobotMap.SHOOTER4);
+
+    public TalonFX shooter1 = new TalonFX(RobotMap.SHOOTER1);
+    public TalonFX shooter2 = new TalonFX(RobotMap.SHOOTER2);
+    public TalonFX shooter3 = new TalonFX(RobotMap.SHOOTER3);
+    public TalonFX shooter4 = new TalonFX(RobotMap.SHOOTER4);
 
     public enum ShooterState {
         STOPPED,
-        //HUB,
+        MAN,
         AUTO,
         SNOWBLOW
     }
@@ -35,16 +38,16 @@ public class ShooterSubsys extends SubsystemBase {
             //     ShootMotor.set(ShooterConfig.HUB);
             //     break;
             case SNOWBLOW:
-                ShootMotor.set(TalonSRXControlMode.PercentOutput, ShooterConfig.SNOWBLOW);
+                
                 break;
             case AUTO:
-                ShootMotor.set(
-                    TalonSRXControlMode.PercentOutput,
-                    0.75 //ShootParams.shooterVelocityMap.get(Robot.getDistance())
-                );
+                
+                break;
+            case MAN:
+                
                 break;
             default:
-                ShootMotor.set(TalonSRXControlMode.PercentOutput, 0);
+                //ShootMotor.set(TalonSRXControlMode.PercentOutput, 0);
                 break;
         }
     }
@@ -60,22 +63,11 @@ public class ShooterSubsys extends SubsystemBase {
     }
 
     public void stopMotors() {
-        ShootMotor.set(TalonSRXControlMode.PercentOutput, 0);
+        //ShootMotor.set(TalonSRXControlMode.PercentOutput, 0);
         state = ShooterState.STOPPED;
     }
 
-    public void marryMotors() {
-        ShootMotor2.follow(ShootMotor);
-        ShootMotor3.follow(ShootMotor);
-        ShootMotor4.follow(ShootMotor);
-    }
 
-    public void configureMotors() {
-        ShootMotor3.setInverted(true);
-        ShootMotor4.setInverted(true);
-        ShootMotor.setNeutralMode(NeutralMode.Coast);
-        ShootMotor2.setNeutralMode(NeutralMode.Coast);
-        ShootMotor3.setNeutralMode(NeutralMode.Coast);
-        ShootMotor4.setNeutralMode(NeutralMode.Coast);
-    }
+
+    //2.45 = 75%
 }

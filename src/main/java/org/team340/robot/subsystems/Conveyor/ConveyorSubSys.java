@@ -24,10 +24,10 @@ public class ConveyorSubSys extends SubsystemBase {
     public void periodic() {
         switch (state) {
             case FEEDING:
-                ConveyorMotor.set(0.25);
+                ConveyorMotor.set(-0.25);
                 break;
             case BACKWARDS:
-                ConveyorMotor.set(-0.05);
+                ConveyorMotor.set(0.25);
                 break;
             default:
                 ConveyorMotor.stopMotor();

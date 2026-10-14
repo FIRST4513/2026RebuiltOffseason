@@ -6,6 +6,7 @@ import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -84,7 +85,8 @@ public final class Swerve extends GRRSubsystem {
         .setLimits(5.0, 0.01, 18.0, 15.0, 45.0)
         .setDriverProfile(5.0, 1.5, 0.1, 5.4, 2.0, 0.05)
         .setPowerProperties(Constants.VOLTAGE, 80.0, 70.0, 60.0, 60.0)
-        .setMechanicalProperties(675.0 / 112.0, 287.0 / 11.0, Units.inchesToMeters(4.0))
+        .setMechanicalProperties(814.0 / 112.0, 287.0 / 11.0, Units.inchesToMeters(4.0))
+        //gear ratio ^^^^
         .setOdometryStd(0.1, 0.1, 0.05)
         .setIMU(SwerveIMUs.pigeon2(RobotMap.CANANDGYRO))
         .setPhoenixFeatures(new CANBus(RobotMap.LOWER_CAN), true, true, true)
@@ -108,7 +110,7 @@ public final class Swerve extends GRRSubsystem {
         api = new SwerveAPI(config);
         vision = new Vision(Constants.CAMERAS);
         apf = new PAPFController(6.0, 0.25, 0.01, true, new Obstacle[0]);
-        angularPID = new ProfiledPIDController(8.0, 0.0, 0.0, new Constraints(10.0, 26.0));
+        angularPID = new ProfiledPIDController(8.0, 0.0, 0.0, new Constraints(3.0, 10.0));
         angularPID.enableContinuousInput(-Math.PI, Math.PI);
 
         state = api.state;
@@ -193,6 +195,9 @@ public final class Swerve extends GRRSubsystem {
     }
 
     public Command driveAtHub(DoubleSupplier x, DoubleSupplier y, DoubleSupplier angular) {
+        var constraints = new TrapezoidProfile.Constraints(2.5, 5);
+        var what = new TrapezoidProfile.State();
+        what.position = angleToHubInv;
         return commandBuilder("Swerve.drive()").onExecute(() ->
             api.applyDriverInputAtHub(
                 x.getAsDouble(),
@@ -235,6 +240,78 @@ public final class Swerve extends GRRSubsystem {
                     config.velocity,
                     maxDeceleration.getAsDouble()
                 );
+
+                speeds.omegaRadiansPerSecond = angularPID.calculate(
+                    state.rotation.getRadians(),
+                    next.getRotation().getRadians()
+                );
+
+                api.applySpeeds(speeds, Perspective.BLUE, true, true);
+            });
+    }
+
+    /**
+     * THIS ONE AUTO AIMS!
+     * @param goal
+     * @param maxDeceleration
+     * @param endTolerance
+     * @return
+     */
+    public Command apfDrive2(Supplier<Pose2d> goal, DoubleSupplier maxDeceleration, DoubleSupplier endTolerance) {
+        return apfDrive2(goal, maxDeceleration)
+            .until(() -> Math2.isNear(goal.get().getTranslation(), state.translation, endTolerance.getAsDouble()))
+            .withName("Swerve.apfDrive()");
+    }
+
+    public Command apfDrive2(Supplier<Pose2d> goal, DoubleSupplier maxDeceleration) {
+        return commandBuilder("Swerve.apfDrive()")
+            .onInitialize(() -> angularPID.reset(state.rotation.getRadians(), state.speeds.omegaRadiansPerSecond))
+            .onExecute(() -> {
+                Pose2d next = goal.get();
+                var speeds = apf.calculate(
+                    state.pose,
+                    next.getTranslation(),
+                    config.velocity,
+                    maxDeceleration.getAsDouble()
+                );
+
+                speeds.omegaRadiansPerSecond = angularPID.calculate(state.rotation.getRadians(), angleToHubInv);
+
+                api.applySpeeds(speeds, Perspective.BLUE, true, true);
+            });
+    }
+
+    public Command apfDrive2Slow(Supplier<Pose2d> goal, DoubleSupplier maxDeceleration, DoubleSupplier endTolerance) {
+        return apfDrive2(goal, maxDeceleration)
+            .until(() -> Math2.isNear(goal.get().getTranslation(), state.translation, endTolerance.getAsDouble()))
+            .withName("Swerve.apfDrive()");
+    }
+
+    public Command apfDrive2Slow(Supplier<Pose2d> goal, DoubleSupplier maxDeceleration) {
+        return commandBuilder("Swerve.apfDrive()")
+            .onInitialize(() -> angularPID.reset(state.rotation.getRadians(), state.speeds.omegaRadiansPerSecond))
+            .onExecute(() -> {
+                Pose2d next = goal.get();
+                var speeds = apf.calculate(state.pose, next.getTranslation(), 0.65, maxDeceleration.getAsDouble());
+
+                speeds.omegaRadiansPerSecond = angularPID.calculate(state.rotation.getRadians(), angleToHubInv);
+
+                api.applySpeeds(speeds, Perspective.BLUE, true, true);
+            });
+    }
+
+    public Command apfSlow(Supplier<Pose2d> goal, DoubleSupplier maxDeceleration, DoubleSupplier endTolerance) {
+        return apfSlow(goal, maxDeceleration)
+            .until(() -> Math2.isNear(goal.get().getTranslation(), state.translation, endTolerance.getAsDouble()))
+            .withName("Swerve.apfDrive()");
+    }
+
+    public Command apfSlow(Supplier<Pose2d> goal, DoubleSupplier maxDeceleration) {
+        return commandBuilder("Swerve.apfDrive()")
+            .onInitialize(() -> angularPID.reset(state.rotation.getRadians(), state.speeds.omegaRadiansPerSecond))
+            .onExecute(() -> {
+                Pose2d next = goal.get();
+                var speeds = apf.calculate(state.pose, next.getTranslation(), 0.75, maxDeceleration.getAsDouble());
 
                 speeds.omegaRadiansPerSecond = angularPID.calculate(
                     state.rotation.getRadians(),

@@ -19,7 +19,13 @@ import org.team340.robot.commands.Routines;
 import org.team340.robot.subsystems.Conveyor.ConveyorCmds;
 import org.team340.robot.subsystems.Conveyor.ConveyorSubSys;
 import org.team340.robot.subsystems.Conveyor.ConveyorSubSys.ConveyorState;
-//import org.team340.robot.subsystems.Pivot.PivotSubsys;
+import org.team340.robot.subsystems.Intake.IntakeCmds;
+import org.team340.robot.subsystems.Intake.IntakeSubsys;
+import org.team340.robot.subsystems.Intake.IntakeSubsys.IntakeState;
+import org.team340.robot.subsystems.Pivot.PivotCmds;
+import org.team340.robot.subsystems.Pivot.PivotSubsys;
+import org.team340.robot.subsystems.Pivot.PivotSubsys;
+import org.team340.robot.subsystems.Pivot.PivotSubsys.PivotState;
 import org.team340.robot.subsystems.Shooter.ShooterCmds;
 import org.team340.robot.subsystems.Shooter.ShooterSubsys;
 import org.team340.robot.subsystems.Shooter.ShooterSubsys.ShooterState;
@@ -47,10 +53,10 @@ public final class Robot extends LoggedRobot {
     public final Routines routines;
     public final Autos autos;
     public static ShooterSubsys shooter;
-    //public static IntakeSubsys intake;
+    public static IntakeSubsys intake;
     public static ShooterFeederSubSys shooterFeeder;
     public static ConveyorSubSys conveyor;
-    //public static PivotSubsys pivot;
+    public static PivotSubsys pivot;
 
     private final CommandXboxController driver;
     private final CommandXboxController coDriver;
@@ -65,10 +71,10 @@ public final class Robot extends LoggedRobot {
         routines = new Routines(this);
         autos = new Autos(this);
         shooter = new ShooterSubsys();
-        //intake = new IntakeSubsys();
+        intake = new IntakeSubsys();
         shooterFeeder = new ShooterFeederSubSys();
         conveyor = new ConveyorSubSys();
-        //pivot = new PivotSubsys();
+        pivot = new PivotSubsys();
 
         // Initialize controllers
         driver = new CommandXboxController(Constants.DRIVER);
@@ -99,15 +105,17 @@ public final class Robot extends LoggedRobot {
                 )
             );
 
+        driver.a().onTrue(ShooterCmds.shooterSetState(ShooterState.MAN));
+
         // Co-driver bindings
 
-        coDriver.y().onTrue(ShooterCmds.shooterSetState(ShooterState.AUTO));
+        coDriver.y().onTrue(ShooterCmds.shooterSetState(ShooterState.MAN));
 
         coDriver
             .y()
             .onTrue(
                 new SequentialCommandGroup(
-                    new WaitCommand(1),
+                    new WaitCommand(0.25),
                     new ParallelCommandGroup(
                         ShooterFeederCmds.shooterFeederSetState(ShooterFeederState.ON),
                         ConveyorCmds.ConveyorSetState(ConveyorState.FEEDING)
@@ -117,11 +125,23 @@ public final class Robot extends LoggedRobot {
         //coDriver.y().onTrue();
         //coDriver.y().onTrue();
 
-        coDriver.povDown().onTrue(ConveyorCmds.ConveyorSetState(ConveyorState.BACKWARDS));
+        //coDriver.povDown().onTrue(ConveyorCmds.ConveyorSetState(ConveyorState.BACKWARDS));
 
         coDriver.x().onTrue(ShooterCmds.shooterStopCmd());
         coDriver.x().onTrue(ShooterFeederCmds.shooterFeederStopCmd());
         coDriver.x().onTrue(ConveyorCmds.ConveyorStopCmd());
+
+        coDriver.rightBumper().onTrue(PivotCmds.pivotSetState(PivotState.EXTEND));
+        coDriver.rightBumper().onTrue(IntakeCmds.intakeSetState(IntakeState.INTAKE));
+        //coDriver.leftBumper().onTrue(PivotCmds.pivotSetState(PivotState.STOW));
+
+        coDriver.a().onTrue(IntakeCmds.intakeSetState(IntakeState.INTAKE));
+        coDriver.b().onTrue(IntakeCmds.intakeSetState(IntakeState.STOPPED));
+
+        coDriver.leftBumper().onFalse(PivotCmds.pivotSetState(PivotState.STOPPED));
+        coDriver.povUp().onFalse(PivotCmds.pivotSetState(PivotState.STOPPED));
+        coDriver.leftBumper().whileTrue(PivotCmds.pivotSetState(PivotState.MANIN));
+        coDriver.povUp().whileTrue(PivotCmds.pivotSetState(PivotState.MANOUT));
 
         // coDriver.b().onTrue(IntakeCmds.intakeSetState(IntakeState.INTAKE));
         // coDriver.a().onTrue(IntakeCmds.intakeSetState(IntakeState.STOPPED));
