@@ -27,6 +27,7 @@ import org.team340.robot.subsystems.Pivot.PivotSubsys;
 import org.team340.robot.subsystems.Pivot.PivotSubsys;
 import org.team340.robot.subsystems.Pivot.PivotSubsys.PivotState;
 import org.team340.robot.subsystems.Shooter.ShooterCmds;
+import org.team340.robot.subsystems.Shooter.ShooterConfig;
 import org.team340.robot.subsystems.Shooter.ShooterSubsys;
 import org.team340.robot.subsystems.Shooter.ShooterSubsys.ShooterState;
 import org.team340.robot.subsystems.ShooterFeeder.ShooterFeederCmds;
@@ -109,13 +110,13 @@ public final class Robot extends LoggedRobot {
 
         // Co-driver bindings
 
-        coDriver.y().onTrue(ShooterCmds.shooterSetState(ShooterState.MAN));
+        coDriver.y().onTrue(ShooterCmds.shooterSetState(ShooterState.AUTO));
 
         coDriver
             .y()
             .onTrue(
                 new SequentialCommandGroup(
-                    new WaitCommand(0.25),
+                    new WaitCommand(1.25),
                     new ParallelCommandGroup(
                         ShooterFeederCmds.shooterFeederSetState(ShooterFeederState.ON),
                         ConveyorCmds.ConveyorSetState(ConveyorState.FEEDING)
@@ -139,9 +140,10 @@ public final class Robot extends LoggedRobot {
         coDriver.b().onTrue(IntakeCmds.intakeSetState(IntakeState.STOPPED));
 
         coDriver.leftBumper().onFalse(PivotCmds.pivotSetState(PivotState.STOPPED));
-        coDriver.povUp().onFalse(PivotCmds.pivotSetState(PivotState.STOPPED));
         coDriver.leftBumper().whileTrue(PivotCmds.pivotSetState(PivotState.MANIN));
-        coDriver.povUp().whileTrue(PivotCmds.pivotSetState(PivotState.MANOUT));
+
+        coDriver.povUp().onTrue(ShooterCmds.autoShooterSpeedUp());
+        coDriver.povDown().onTrue(ShooterCmds.autoShooterSpeedDown());
 
         // coDriver.b().onTrue(IntakeCmds.intakeSetState(IntakeState.INTAKE));
         // coDriver.a().onTrue(IntakeCmds.intakeSetState(IntakeState.STOPPED));
@@ -172,9 +174,42 @@ public final class Robot extends LoggedRobot {
     @Override
     public void robotPeriodic() {
         Profiler.run("scheduler", scheduler::run);
+
+        if (distanceToHub() <= 1.5) {
+            ShooterConfig.AUTO = 0;
+        } else if (distanceToHub() <= 2.0) {
+            ShooterConfig.AUTO = -.535 + ShooterConfig.AUTOMAN;
+        } else if (distanceToHub() <= 2.2) {
+            ShooterConfig.AUTO = -.5675 + ShooterConfig.AUTOMAN;
+        } else if (distanceToHub() <= 2.4) {
+            ShooterConfig.AUTO = -.595 + ShooterConfig.AUTOMAN;
+        } else if (distanceToHub() <= 2.7) {
+            ShooterConfig.AUTO = -.61 + ShooterConfig.AUTOMAN;
+        } else if (distanceToHub() <= 2.9) {
+            ShooterConfig.AUTO = -.6525 + ShooterConfig.AUTOMAN;
+        } else if (distanceToHub() <= 3.1) {
+            ShooterConfig.AUTO = -.6625 + ShooterConfig.AUTOMAN;
+        } else if (distanceToHub() <= 3.3) {
+            ShooterConfig.AUTO = -.695 + ShooterConfig.AUTOMAN;
+        } else if (distanceToHub() <= 3.5) {
+            ShooterConfig.AUTO = -.7325 + ShooterConfig.AUTOMAN;
+        } else if (distanceToHub() <= 3.7) {
+            ShooterConfig.AUTO = -.475 + ShooterConfig.AUTOMAN;
+        } else if (distanceToHub() <= 4) {
+            ShooterConfig.AUTO = -.795 + ShooterConfig.AUTOMAN;
+        } else if (distanceToHub() <= 4.2) {
+            ShooterConfig.AUTO = -.8175 + ShooterConfig.AUTOMAN;
+        } else if (distanceToHub() <= 4.4) {
+            ShooterConfig.AUTO = -.8325 + ShooterConfig.AUTOMAN;
+        } else if (distanceToHub() <= 4.7) {
+            ShooterConfig.AUTO = -.85 + ShooterConfig.AUTOMAN;
+        } else if (distanceToHub() <= 5.3) {
+            ShooterConfig.AUTO = -.9275 + ShooterConfig.AUTOMAN;
+        }
     }
 
     public double distanceToHub() {
+        System.out.println(swerve.distanceToHub());
         return swerve.distanceToHub();
     }
 

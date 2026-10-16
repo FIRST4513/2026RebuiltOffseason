@@ -1,7 +1,6 @@
 package org.team340.robot.util;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import org.team340.robot.subsystems.Shooter.ShooterConfig;
 
 /**
  * This class stores our lookup tables for the {@link Hood} and {@link Shooters}
@@ -25,21 +24,21 @@ public final class ShootParams {
         // Data obtained from empirical testing.
         final DataPoint[] dataPoints = {
             new DataPoint(1.5, 0.0),
-            new DataPoint(2.00, -.535 + ShooterConfig.AUTOMAN),
-            new DataPoint(2.2, -.5675 + ShooterConfig.AUTOMAN),
-            new DataPoint(2.4, -.595 + ShooterConfig.AUTOMAN),
-            new DataPoint(2.7, -.61 + ShooterConfig.AUTOMAN),
-            new DataPoint(2.9, -.6525 + ShooterConfig.AUTOMAN),
-            new DataPoint(3.1, -.6625 + ShooterConfig.AUTOMAN),
-            new DataPoint(3.3, -.695 + ShooterConfig.AUTOMAN),
-            new DataPoint(3.5, -.7325 + ShooterConfig.AUTOMAN),
-            new DataPoint(3.7, -.77 + ShooterConfig.AUTOMAN),
-            new DataPoint(3.9, -.7875 + ShooterConfig.AUTOMAN),
-            new DataPoint(4, -.795 + ShooterConfig.AUTOMAN),
-            new DataPoint(4.2, -.8175 + ShooterConfig.AUTOMAN),
-            new DataPoint(4.4, -.8325 + ShooterConfig.AUTOMAN),
-            new DataPoint(4.7, -.85 + ShooterConfig.AUTOMAN),
-            new DataPoint(5.3, -.9275 + ShooterConfig.AUTOMAN)
+            new DataPoint(2.00, -.535),
+            new DataPoint(2.2, -.5675),
+            new DataPoint(2.4, -.595),
+            new DataPoint(2.7, -.61),
+            new DataPoint(2.9, -.6525),
+            new DataPoint(3.1, -.6625),
+            new DataPoint(3.3, -.695),
+            new DataPoint(3.5, -.7325),
+            new DataPoint(3.7, -.77),
+            new DataPoint(3.9, -.7875),
+            new DataPoint(4, -.795),
+            new DataPoint(4.2, -.8175),
+            new DataPoint(4.4, -.8325),
+            new DataPoint(4.7, -.85),
+            new DataPoint(5.3, -.9275)
         };
 
         // Create our lookup tables.
